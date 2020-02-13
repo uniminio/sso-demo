@@ -28,6 +28,8 @@ public class AuthorizeController {
     private String redirectUri;
     @Value("${oauth2.uri}")
     private String oauth2Uri;
+    @Value("${appkey}")
+    private String appKey;
 
     /**
      * 回调函数
@@ -54,7 +56,7 @@ public class AuthorizeController {
         // 生成随机数
         accessTokenDto.setNonce_str(String.valueOf(Math.round(Math.random()*1000)));
         // 为获取Access Token生成签名
-        String sign = "client_id"+ clientId+"client_secret"+clientSecret+"code"+code+"grant_typeauthorization_codenonce_str"+accessTokenDto.getNonce_str()+"oauth_timestamp"+accessTokenDto.getOauth_timestamp()+"redirect_uri"+redirectUri+"appkey"+"56eea6c8e76fc4262a4a2816dfd79c7fdb4781a9433da5509d3ee649125447d8"+clientSecret;
+        String sign = "client_id"+ clientId+"client_secret"+clientSecret+"code"+code+"grant_typeauthorization_codenonce_str"+accessTokenDto.getNonce_str()+"oauth_timestamp"+accessTokenDto.getOauth_timestamp()+"redirect_uri"+redirectUri+"appkey"+appKey+clientSecret;
         String signTemp = DigestUtils.md5DigestAsHex(sign.getBytes()).toUpperCase();
         accessTokenDto.setSign(signTemp);
 
@@ -70,10 +72,12 @@ public class AuthorizeController {
         profileDTO.setNonce_str(String.valueOf(Math.round(Math.random()*1000)));
         profileDTO.setAccess_token(accessToken);
         //为请求profile API生成签名
-        String sign2 = "access_token"+accessToken+"client_id"+clientId+"client_secret"+clientSecret+"nonce_str"+profileDTO.getNonce_str()+"oauth_timestamp"+profileDTO.getOauth_timestamp()+"appkey"+"56eea6c8e76fc4262a4a2816dfd79c7fdb4781a9433da5509d3ee649125447d8"+clientSecret;
+        String sign2 = "access_token"+accessToken+"client_id"+clientId+"client_secret"+clientSecret+"nonce_str"+profileDTO.getNonce_str()+"oauth_timestamp"+profileDTO.getOauth_timestamp()+"appkey"+appKey+clientSecret;
         String signTemp2 = DigestUtils.md5DigestAsHex(sign2.getBytes()).toUpperCase();
         profileDTO.setSign(signTemp2);
+        // 根据accessToken获取用户信息
         UserDTO userDTO = paraProvider.getUser(profileDTO);
+        // 将用户名存入session
         request.getSession().setAttribute("user",userDTO.getId());
 
 
